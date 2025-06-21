@@ -31,7 +31,7 @@
 autocomplete-demo/
 ├── app/
 │   ├── build.gradle.kts          # конфигурация Gradle
-│   └── src/main/java/org/example/
+│   └── src/main/java/io/github/autocompletedemo/
 │       └── App.java              # JavaFX приложение
 ├── lib/                          # Autocomplete JAR файлы
 │   ├── autocomplete-1.0-SNAPSHOT.jar
