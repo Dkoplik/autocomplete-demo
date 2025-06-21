@@ -43,7 +43,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "io.github.autocompletedemo.Main"
+    mainClass = "io.github.autocompletedemo.App"
 }
 
 tasks.named<Test>("test") {
