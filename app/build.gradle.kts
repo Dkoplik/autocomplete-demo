@@ -8,6 +8,8 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    // Apply the JavaFX plugin for JavaFX applications
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 repositories {
@@ -23,6 +25,13 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+    
+    // JavaFX dependencies
+    implementation("org.openjfx:javafx-controls:21")
+    implementation("org.openjfx:javafx-fxml:21")
+    
+    // Local JAR files from lib directory
+    implementation(fileTree(mapOf("dir" to "../lib", "include" to listOf("*.jar"))))
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -34,10 +43,16 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "io.github.autocompletedemo.Main"
 }
 
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+// Configure JavaFX
+javafx {
+    version = "21"
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
