@@ -153,6 +153,7 @@ public class App extends Application {
           setStyle("-fx-background-color: transparent; -fx-text-fill: black;");
         }
       }
+
       @Override
       protected void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
@@ -164,6 +165,7 @@ public class App extends Application {
           updateHighlight();
         }
       }
+
       {
         selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
           updateHighlight();
@@ -317,7 +319,7 @@ public class App extends Application {
     if (suggestionsDisabled) {
       return;
     }
-    
+
     String currentText = textArea.getText();
     int caretPosition = textArea.getCaretPosition();
 
@@ -380,7 +382,7 @@ public class App extends Application {
 
       int caretPosition = textArea.getCaretPosition();
       String text = textArea.getText();
-      
+
       int line = 0;
       int column = 0;
       for (int i = 0; i < caretPosition && i < text.length(); i++) {
@@ -394,13 +396,13 @@ public class App extends Application {
 
       double charWidth = 6.0;
       double lineHeight = 16.0;
-      
+
       double x = textAreaBounds.getMinX() + 10 + (column * charWidth);
       double y = textAreaBounds.getMinY() + 10 + (line * lineHeight);
 
       double popupWidth = 250;
       double popupHeight = 150;
-      
+
       if (x + popupWidth > textAreaBounds.getMaxX()) {
         x = textAreaBounds.getMaxX() - popupWidth - 10;
       }
@@ -552,15 +554,12 @@ public class App extends Application {
   private void loadDictionary() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Load Dictionary");
-    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"),
-        new FileChooser.ExtensionFilter("All Files", "*.*"));
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All Files", "*.*"));
 
     File file = fileChooser.showOpenDialog(textArea.getScene().getWindow());
     if (file != null) {
       try {
-        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-        textAnalyzer.clear();
-        textAnalyzer.addText(content);
+        textAnalyzer.loadFromFile(file);
         statusBar.setText("Dictionary loaded from: " + file.getName());
       } catch (IOException e) {
         showError("Error loading dictionary", e.getMessage());
@@ -571,18 +570,12 @@ public class App extends Application {
   private void saveDictionary() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Save Dictionary");
-    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"),
-        new FileChooser.ExtensionFilter("All Files", "*.*"));
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All Files", "*.*"));
 
     File file = fileChooser.showSaveDialog(textArea.getScene().getWindow());
     if (file != null) {
       try {
-        Map<String, Integer> words = textAnalyzer.getAllWords();
-        StringBuilder content = new StringBuilder();
-        for (Map.Entry<String, Integer> entry : words.entrySet()) {
-          content.append(entry.getKey()).append(" ").append(entry.getValue()).append("\n");
-        }
-        Files.write(file.toPath(), content.toString().getBytes(StandardCharsets.UTF_8));
+        textAnalyzer.saveToFile(file);
         statusBar.setText("Dictionary saved to: " + file.getName());
       } catch (IOException e) {
         showError("Error saving dictionary", e.getMessage());
@@ -612,22 +605,17 @@ public class App extends Application {
   }
 
   private void loadDefaultDictionary() {
-    String defaultWords = "hello world java javafx autocomplete text editor application "
-        + "programming language computer software development interface "
-        + "user experience design pattern algorithm data structure "
-        + "function method class object variable constant string integer "
-        + "boolean array list map set queue stack tree graph node edge "
-        + "search sort filter map reduce stream lambda expression "
-        + "interface abstract class extends implements override "
-        + "public private protected static final synchronized "
-        + "try catch finally throw throws exception error "
-        + "import package namespace library framework api "
-        + "database connection query result set transaction "
-        + "network socket http request response json xml "
-        + "file directory path url uri encoding decoding "
-        + "thread process memory garbage collection optimization";
-
-    textAnalyzer.addText(defaultWords);
+    File dictFile = new File("dict");
+    if (dictFile.exists() && dictFile.isFile()) {
+      try {
+        textAnalyzer.loadFromFile(dictFile);
+        statusBar.setText("Default dictionary loaded from: dict");
+      } catch (IOException e) {
+        showError("Error loading default dictionary", e.getMessage());
+      }
+    } else {
+      statusBar.setText("Default dictionary file 'dict' not found.");
+    }
   }
 
   // Диалоги настроек
@@ -697,10 +685,12 @@ public class App extends Application {
     Alert alert = new Alert(Alert.AlertType.INFORMATION);
     alert.setTitle("About");
     alert.setHeaderText("Autocomplete Text Editor");
-    alert.setContentText("Простой текстовый редактор с функцией автодополнения в реальном времени.\n\n"
-        + "Возможности:\n" + "• Предложения автодополнения в реальном времени\n" + "• Управление словарями\n"
-        + "• Настраиваемые параметры автодополнения\n" + "• Операции с файлами (Новый, Открыть, Сохранить)\n"
-        + "• Горячие клавиши (Tab, Escape, стрелки)\n\n" + "Версия: 1.0");
+    alert.setContentText(
+        "Простой текстовый редактор с функцией автодополнения в реальном времени.\n\n"
+            + "Возможности:\n" + "• Предложения автодополнения в реальном времени\n"
+            + "• Управление словарями\n" + "• Настраиваемые параметры автодополнения\n"
+            + "• Операции с файлами (Новый, Открыть, Сохранить)\n"
+            + "• Горячие клавиши (Tab, Escape, стрелки)\n\n" + "Версия: 1.0");
     alert.showAndWait();
   }
 
