@@ -605,16 +605,24 @@ public class App extends Application {
   }
 
   private void loadDefaultDictionary() {
-    File dictFile = new File("dict");
-    if (dictFile.exists() && dictFile.isFile()) {
-      try {
-        textAnalyzer.loadFromFile(dictFile);
-        statusBar.setText("Default dictionary loaded from: dict");
-      } catch (IOException e) {
+    try (InputStream in = getClass().getResourceAsStream("/dict")) {
+        if (in != null) {
+            File tempFile = File.createTempFile("dict", null);
+            tempFile.deleteOnExit();
+            try (OutputStream out = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+            }
+            textAnalyzer.loadFromFile(tempFile);
+            statusBar.setText("Default dictionary loaded from JAR resource.");
+        } else {
+            statusBar.setText("Default dictionary resource not found in JAR.");
+        }
+    } catch (IOException e) {
         showError("Error loading default dictionary", e.getMessage());
-      }
-    } else {
-      statusBar.setText("Default dictionary file 'dict' not found.");
     }
   }
 
@@ -660,7 +668,7 @@ public class App extends Application {
       originalWeight = originalWeightSpinner.getValue();
 
       BiFunction<String, String, Integer> distanceFunction =
-          (s1, s2) -> io.github.autocomplete.util.Levenshtein.distance(s1, s2);
+          (s1, s2) -> io.github.autocomplete.distance.Levenshtein.distance(s1, s2);
       autocompleteConfig = new AutocompleteConfig(distanceFunction, toleranceThreshold, tolerance,
           similarWeight, originalWeight);
       autocompleteProvider.setConfig(autocompleteConfig);
