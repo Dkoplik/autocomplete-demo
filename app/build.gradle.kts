@@ -5,11 +5,14 @@
  * For more details on building Java & JVM projects, please refer to https://docs.gradle.org/8.14.2/userguide/building_java_projects.html in the Gradle documentation.
  */
 
+import org.gradle.jvm.tasks.Jar
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     // Apply the JavaFX plugin for JavaFX applications
     id("org.openjfx.javafxplugin") version "0.1.0"
+    id("org.beryx.jlink") version "3.0.1"
 }
 
 repositories {
@@ -55,4 +58,19 @@ tasks.named<Test>("test") {
 javafx {
     version = "21"
     modules = listOf("javafx.controls", "javafx.fxml")
+}
+
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes["Main-Class"] = "io.github.autocompletedemo.App"
+    }
+    duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+}
+
+jlink {
+    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    launcher {
+        name = "autocomplete-demo"
+    }
+    addExtraDependencies("javafx")
 }
